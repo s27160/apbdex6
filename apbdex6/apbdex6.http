@@ -1,0 +1,6 @@
+@apbdex6_HostAddress = http://localhost:5200
+
+GET {{apbdex6_HostAddress}}/
+Accept: application/json
+
+###

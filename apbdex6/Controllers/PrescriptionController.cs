@@ -11,15 +11,12 @@ public class PrescriptionController: ControllerBase
     private readonly IPrescriptionService _svc;
     public PrescriptionController(IPrescriptionService svc) => _svc = svc;
 
-    [HttpPost("/create")]
+    [HttpPost("create")]
     public IActionResult Post([FromBody] CreatePrescription createPrescription)
     {
         var newId =  _svc.Create(createPrescription);
-        return CreatedAtAction(
-            nameof(PatientController.Get),
-            "Patient",
-            new { idPatient =  createPrescription.CreatePatient.IdPatient ?? newId },
-            null
-        );
+        var patientId = createPrescription.Patient.IdPatient ?? newId;
+        var dto = _svc.GetPatient(patientId);
+        return Ok(dto);
     }
 }

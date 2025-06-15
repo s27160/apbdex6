@@ -11,8 +11,8 @@ public class PatientController : ControllerBase
     private readonly IPrescriptionService _svc;
     public PatientController(IPrescriptionService svc) => _svc = svc;
 
-    [HttpGet]
-    public ActionResult<Patient> Get([FromBody] int patientId)
+    [HttpGet("{patientId}")]
+    public ActionResult<Patient> Get(int patientId)
     {
         var dto = _svc.GetPatient(patientId);
         return Ok(dto);

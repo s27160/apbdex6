@@ -14,6 +14,27 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
+        mb.Entity<Patient>().ToTable("Patient");
+        mb.Entity<Doctor>().ToTable("Doctor");
+        mb.Entity<Medicament>().ToTable("Medicament");
+        mb.Entity<Prescription>().ToTable("Prescription");
+        mb.Entity<PrescriptionMedicament>().ToTable("Prescription_Medicament");
+
+        mb.Entity<Patient>().HasKey(p => p.IdPatient);
+        mb.Entity<Doctor>().HasKey(d => d.IdDoctor);
+        mb.Entity<Medicament>().HasKey(m => m.IdMedicament);
+        mb.Entity<Prescription>().HasKey(p => p.IdPrescription);
+
+        mb.Entity<Prescription>()
+            .HasOne(p => p.Doctor)
+            .WithMany(d => d.Prescriptions)
+            .HasForeignKey(p => p.IdDoctor);
+
+        mb.Entity<Prescription>()
+            .HasOne(p => p.Patient)
+            .WithMany(pat => pat.Prescriptions)
+            .HasForeignKey(p => p.IdPatient);
+
         mb.Entity<PrescriptionMedicament>()
             .HasKey(pm => new { pm.IdMedicament, pm.IdPrescription });
 

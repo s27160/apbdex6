@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace apbdex6.Models;
 
+[PrimaryKey(nameof(IdMedicament), nameof(IdPrescription))]
 public class PrescriptionMedicament
 {
     public int IdMedicament { set; get; }

@@ -23,46 +23,50 @@ public class PrescriptionService : IPrescriptionService
             throw new Exception("DueDate musi być >= Date.");
 
         Patient patient = null;
-        if (dto.CreatePatient.IdPatient != null)
+        if (dto.Patient.IdPatient != null)
         {
-            patient = _db.Patients.Find(dto.CreatePatient.IdPatient);
+            patient = _db.Patients.Find(dto.Patient.IdPatient);
         }
+
         if (patient == null)
         {
             patient = new Patient
             {
-                FirstName = dto.CreatePatient.FirstName,
-                LastName  = dto.CreatePatient.LastName,
-                BirtDate = dto.CreatePatient.BirtDate
+                FirstName = dto.Patient.FirstName,
+                LastName = dto.Patient.LastName,
+                BirthDate = dto.Patient.BirthDate
             };
             _db.Patients.Add(patient);
             _db.SaveChanges();
         }
 
-        var medsIds = dto.Medicaments.Select(m => m.IdMedicament).ToList();
-        var existCount =  _db.Medicaments
-            .Count(m => medsIds.Contains(m.Id));
-        if (existCount != medsIds.Count)
-            throw new Exception("Jeden lub więcej lek nie istnieje.");
+        var medsIds = dto.Medicaments.Select(m => m.Medicament.IdMedicament).ToList();
+        var existCount = _db.Medicaments.Count(m => medsIds.Contains(m.IdMedicament));
+        if (existCount != medsIds.Count) throw new Exception("Jeden lub więcej leków nie istnieje.");
 
         var prescription = new Prescription
         {
-            Date        = dto.Date,
-            DueDate     = dto.DueDate,
-            IdPatient   = patient.IdPatient,
-            IdDoctor    = dto.Doctor.IdDoctor,
-            PrescriptionMedicaments = dto.Medicaments
-                .Select(m => new PrescriptionMedicament
-                {
-                    IdMedicament = m.IdMedicament,
-                    Dose         = m.Dose,
-                    Details      = m.Details,
-                })
-                .ToList()
+            Date = dto.Date,
+            DueDate = dto.DueDate,
+            IdPatient = patient.IdPatient,
+            IdDoctor = dto.Doctor.IdDoctor,
         };
 
         _db.Prescriptions.Add(prescription);
         _db.SaveChanges();
+
+        foreach (var createPrescriptionMedicament in dto.Medicaments)
+        {
+            var prescriptionMedicament = new PrescriptionMedicament
+            {
+                IdPrescription = prescription.IdPrescription,
+                IdMedicament = createPrescriptionMedicament.Medicament.IdMedicament,
+                Dose = createPrescriptionMedicament.Dose,
+                Details = createPrescriptionMedicament.Details
+            };
+            _db.PrescriptionMedicaments.Add(prescriptionMedicament);
+            _db.SaveChanges();
+        }
 
         return prescription.IdPrescription;
     }
@@ -74,6 +78,7 @@ public class PrescriptionService : IPrescriptionService
             .ThenInclude(pr => pr.Doctor)
             .Include(p => p.Prescriptions)
             .ThenInclude(pr => pr.PrescriptionMedicaments)
+            .ThenInclude(prescriptionMedicament => prescriptionMedicament.Medicament)
             .FirstOrDefault(p => p.IdPatient == idPatient);
 
         if (patient == null)
@@ -81,29 +86,29 @@ public class PrescriptionService : IPrescriptionService
 
         var result = new PatientDetails()
         {
-            IdPatient   = patient.IdPatient,
-            FirstName   = patient.FirstName,
-            LastName    = patient.LastName,
-            BirthDate   = patient.BirtDate,
+            IdPatient = patient.IdPatient,
+            FirstName = patient.FirstName,
+            LastName = patient.LastName,
+            BirthDate = patient.BirthDate,
             Prescriptions = patient.Prescriptions
                 .OrderBy(pr => pr.DueDate)
-                .Select(pr => new Prescription()
+                .Select(pr => new PrescriptionDetails()
                 {
                     IdPrescription = pr.IdPrescription,
-                    Date           = pr.Date,
-                    DueDate        = pr.DueDate,
+                    Date = pr.Date,
+                    DueDate = pr.DueDate,
                     Doctor = new Doctor()
                     {
-                        IdDoctor  = pr.Doctor.IdDoctor,
+                        IdDoctor = pr.Doctor.IdDoctor,
                         FirstName = pr.Doctor.FirstName,
-                        LastName  = pr.Doctor.LastName
+                        LastName = pr.Doctor.LastName
                     },
-                    PrescriptionMedicaments = pr.PrescriptionMedicaments
-                        .Select(pm => new PrescriptionMedicament()
+                    Medicaments = pr.PrescriptionMedicaments
+                        .Select(pm => new PrescriptionMedicamentDetails()
                         {
-                            IdMedicament = pm.IdMedicament,
-                            Dose         = pm.Dose,
-                            Details  = pm.Details
+                            Medicament = pm.Medicament,
+                            Dose = pm.Dose,
+                            Details = pm.Details
                         })
                         .ToList()
                 })

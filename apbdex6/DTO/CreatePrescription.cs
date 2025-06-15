@@ -4,9 +4,9 @@ namespace apbdex6.DTO;
 
 public class CreatePrescription
 {
-    public CreatePatient CreatePatient { get; set; }
-    public Doctor Doctor { get; set; }
+    public CreatePatient Patient { get; set; }
+    public CreateDoctor Doctor { get; set; }
     public DateTime Date { get; set; }
     public DateTime DueDate { get; set; }
-    public List<PrescriptionMedicament> Medicaments { get; set; }
+    public List<CreatePrescriptionMedicament> Medicaments { get; set; }
 }

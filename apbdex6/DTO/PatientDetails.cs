@@ -9,5 +9,5 @@ public class PatientDetails
     public string LastName  { get; set; }
     public DateTime BirthDate { get; set; }
 
-    public List<Prescription> Prescriptions { get; set; }
+    public List<PrescriptionDetails> Prescriptions { get; set; }
 }
